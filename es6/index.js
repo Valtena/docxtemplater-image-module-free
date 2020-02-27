@@ -70,10 +70,12 @@ class ImageModule {
 			return this.options.setParser(placeHolderContent);
 		}
 		if (placeHolderContent.substring(0, 2) === "%%") {
-			return {type, value: placeHolderContent.substr(2), module, centered: true};
+			const data = placeHolderContent.substr(2).split(",");
+			return {type, value: data[0], module, centered: true, templateConstraints: data.slice(1)};
 		}
 		if (placeHolderContent.substring(0, 1) === "%") {
-			return {type, value: placeHolderContent.substr(1), module, centered: false};
+			const data = placeHolderContent.substr(1).split(",");
+			return {type, value: data[0], module, centered: false, templateConstraints: data.slice(1)};
 		}
 		return null;
 	}
@@ -106,7 +108,7 @@ class ImageModule {
 		const imgManager = new ImgManager(this.zip, options.filePath, this.xmlDocuments, this.fileType);
 		const imgBuffer = this.options.getImage(tagValue, part.value);
 		const rId = imgManager.addImageRels(this.getNextImageName(), imgBuffer);
-		const sizePixel = this.options.getSize(imgBuffer, tagValue, part.value);
+		const sizePixel = this.options.getSize(imgBuffer, tagValue, part.value, part.templateConstraints);
 		return this.getRenderedPart(part, rId, sizePixel);
 	}
 	resolve(part, options) {
@@ -126,7 +128,7 @@ class ImageModule {
 		}).then((imgBuffer) => {
 			const rId = imgManager.addImageRels(this.getNextImageName(), imgBuffer);
 			return new Promise((resolve) => {
-				const sizePixel = this.options.getSize(imgBuffer, value, part.value);
+				const sizePixel = this.options.getSize(imgBuffer, value, part.value, part.templateConstraints);
 				resolve(sizePixel);
 			}).then((sizePixel) => {
 				return {

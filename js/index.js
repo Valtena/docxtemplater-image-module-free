@@ -98,10 +98,12 @@ var ImageModule = function () {
 				return this.options.setParser(placeHolderContent);
 			}
 			if (placeHolderContent.substring(0, 2) === "%%") {
-				return { type: type, value: placeHolderContent.substr(2), module: module, centered: true };
+				var data = placeHolderContent.substr(2).split(",");
+				return { type: type, value: data[0], module: module, centered: true, templateConstraints: data.slice(1) };
 			}
 			if (placeHolderContent.substring(0, 1) === "%") {
-				return { type: type, value: placeHolderContent.substr(1), module: module, centered: false };
+				var _data = placeHolderContent.substr(1).split(",");
+				return { type: type, value: _data[0], module: module, centered: false, templateConstraints: _data.slice(1) };
 			}
 			return null;
 		}
@@ -133,11 +135,10 @@ var ImageModule = function () {
 			} else if ((typeof tagValue === "undefined" ? "undefined" : _typeof(tagValue)) === "object") {
 				return this.getRenderedPart(part, tagValue.rId, tagValue.sizePixel);
 			}
-			
 			var imgManager = new ImgManager(this.zip, options.filePath, this.xmlDocuments, this.fileType);
 			var imgBuffer = this.options.getImage(tagValue, part.value);
 			var rId = imgManager.addImageRels(this.getNextImageName(), imgBuffer);
-			var sizePixel = this.options.getSize(imgBuffer, tagValue, part.value);
+			var sizePixel = this.options.getSize(imgBuffer, tagValue, part.value, part.templateConstraints);
 			return this.getRenderedPart(part, rId, sizePixel);
 		}
 	}, {
@@ -161,7 +162,7 @@ var ImageModule = function () {
 			}).then(function (imgBuffer) {
 				var rId = imgManager.addImageRels(_this.getNextImageName(), imgBuffer);
 				return new Promise(function (resolve) {
-					var sizePixel = _this.options.getSize(imgBuffer, value, part.value);
+					var sizePixel = _this.options.getSize(imgBuffer, value, part.value, part.templateConstraints);
 					resolve(sizePixel);
 				}).then(function (sizePixel) {
 					return {
